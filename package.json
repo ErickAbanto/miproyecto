@@ -1,0 +1,11 @@
+{
+  "name": "pizzeria-fullstack",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix apppizzeria2.00 && npm install --prefix pizzeria-react-frontend",
+    "dev": "concurrently \"npm run dev --prefix apppizzeria2.00\" \"npm run dev --prefix pizzeria-react-frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

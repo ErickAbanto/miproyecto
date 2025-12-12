@@ -1,0 +1,50 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const app = express();
+
+// Conectar a MongoDB
+const uri = 'mongodb://127.0.0.1:27017/pizzeria_db'; 
+
+mongoose.connect(uri)
+  .then(() => {
+    console.log('Mongoose está conectado a la base de datos');
+  })
+  .catch((err) => {
+    console.error('Error de conexión a la base de datos:', err);
+  });
+
+app.use(express.json());
+
+// Esquema y modelo de pizza
+const pizzaSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  ingredients: [String],
+});
+
+const Pizza = mongoose.model('Pizza', pizzaSchema);
+
+// Rutas
+app.post('/pizzas', async (req, res) => {
+  try {
+    const newPizza = new Pizza(req.body);
+    await newPizza.save();
+    res.status(201).json({ message: 'Pizza creada' });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+app.get('/pizzas', async (req, res) => {
+  try {
+    const pizzas = await Pizza.find();
+    res.status(200).json(pizzas);
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+// Iniciar servidor
+app.listen(3000, () => {
+  console.log('Servidor escuchando en el puerto 3000');
+});
