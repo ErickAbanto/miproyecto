@@ -3,13 +3,24 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
-app.use(cors());
+
+/* =====================
+   MIDDLEWARES
+===================== */
+app.use(
+  cors({
+    origin: "*", // luego puedes limitar a tu frontend
+  })
+);
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI =
   process.env.MONGO_URI || "mongodb://127.0.0.1:27017/pizzeria_db";
 
+/* =====================
+   CONEXIÓN A MONGODB
+===================== */
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("Mongoose conectado a la base de datos"))
@@ -17,48 +28,79 @@ mongoose
     console.error("Error de conexión a la base de datos:", err)
   );
 
-// ==================
-// MODELO DE PIZZA
-// ==================
+/* =====================
+   MODELO PIZZA
+===================== */
 const PizzaSchema = new mongoose.Schema(
   {
-    nombre: { type: String, required: true },
+    nombre: { type: String, required: true, trim: true },
+
     categoria: {
       type: String,
       enum: ["Pizzas", "Pastas", "Bebidas"],
       required: true,
     },
-    precio: { type: Number, required: true },
-    ingredientes: { type: [String], default: [] },
+
+    precio: { type: Number, required: true, min: 0 },
     img: { type: String, required: true },
+
+    descripcion: { type: String, default: "" },
+    ingredientes: { type: [String], default: [] },
+
+    extras: {
+      type: [
+        {
+          nombre: { type: String },
+          precio: { type: Number, min: 0 },
+        },
+      ],
+      default: [],
+    },
+
+    tamanos: {
+      type: [
+        {
+          nombre: { type: String },
+          precio: { type: Number, min: 0 },
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 );
 
 const Pizza = mongoose.model("Pizza", PizzaSchema);
 
-// ==================
-// RUTAS CRUD
-// ==================
+/* =====================
+   RUTAS API
+===================== */
+
+// OBTENER TODAS LAS PIZZAS
 app.get("/api/pizzas", async (req, res) => {
   try {
     const pizzas = await Pizza.find();
     res.status(200).json(pizzas);
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: "Error al obtener pizzas" });
   }
 });
 
+// CREAR PIZZA
 app.post("/api/pizzas", async (req, res) => {
   try {
     const nuevaPizza = new Pizza(req.body);
     await nuevaPizza.save();
     res.status(201).json(nuevaPizza);
-  } catch (error) {
-    res.status(400).json({ error: "Datos inválidos al crear pizza" });
+  } catch (err) {
+    res.status(400).json({
+      error: "Datos inválidos al crear pizza",
+      detalle: err.message,
+    });
   }
 });
 
+// EDITAR PIZZA
 app.put("/api/pizzas/:id", async (req, res) => {
   try {
     const updated = await Pizza.findByIdAndUpdate(
@@ -67,26 +109,28 @@ app.put("/api/pizzas/:id", async (req, res) => {
       { new: true }
     );
     res.json(updated);
-  } catch (error) {
+  } catch (err) {
     res.status(400).json({ error: "Error al actualizar pizza" });
   }
 });
 
+// ELIMINAR PIZZA
 app.delete("/api/pizzas/:id", async (req, res) => {
   try {
     await Pizza.findByIdAndDelete(req.params.id);
     res.json({ mensaje: "Pizza eliminada" });
-  } catch (error) {
+  } catch (err) {
     res.status(400).json({ error: "Error al eliminar pizza" });
   }
 });
 
-// Ruta test navegador
+/* =====================
+   TEST SERVER
+===================== */
 app.get("/", (req, res) => {
   res.send("Servidor backend corriendo correctamente");
 });
 
-// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Backend en http://localhost:${PORT}`);
 });
