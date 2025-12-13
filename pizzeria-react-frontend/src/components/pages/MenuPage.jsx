@@ -1,5 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Footer from "../organisms/Footer";
+import {
+  FaSearch,
+  FaStar,
+  FaShoppingCart,
+  FaTrash,
+  FaInfoCircle,
+  FaPlusCircle,
+  FaPlus,
+  FaMinus,
+} from "react-icons/fa";
 
 function MenuPage() {
   const [query, setQuery] = useState("");
@@ -7,115 +17,298 @@ function MenuPage() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [openCategorias, setOpenCategorias] = useState(false);
+  const [, setOpenInfo] = useState(false); // ✅ ERROR CORREGIDO
+  const [openAgregar, setOpenAgregar] = useState(false);
+  const [openCarrito, setOpenCarrito] = useState(false);
+
+  const [selectedPizza, setSelectedPizza] = useState(null);
+  const [carrito, setCarrito] = useState([]);
+
+  const [tamano, setTamano] = useState(null);
+  const [extras, setExtras] = useState([]);
+  const [cantidad, setCantidad] = useState(1);
+
   const categorias = ["Todas", "Pizzas", "Pastas", "Bebidas"];
 
-  // 🔥 CARGA DESDE BACKEND (POSTMAN / MONGODB)
   useEffect(() => {
-    const obtenerProductos = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/pizzas");
-        const data = await res.json();
-        setProductos(data);
-      } catch (error) {
-        console.error("Error al cargar el menú:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    obtenerProductos();
+    fetch("http://localhost:3000/api/pizzas")
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .finally(() => setLoading(false));
   }, []);
 
   const filtrarProductos = productos.filter((p) => {
-    const coincideCategoria =
+    const catOk =
       activeCategory === "Todas" || p.categoria === activeCategory;
-    const coincideBusqueda =
-      p.nombre.toLowerCase().includes(query.toLowerCase());
-    return coincideCategoria && coincideBusqueda;
+    const searchOk = p.nombre
+      .toLowerCase()
+      .includes(query.toLowerCase());
+    return catOk && searchOk;
   });
 
+  const calcularTotal = () => {
+    if (!selectedPizza) return 0;
+    let total = selectedPizza.precio;
+    if (tamano) total += tamano.precio;
+    extras.forEach((e) => (total += e.precio));
+    return total * cantidad;
+  };
+
+  const agregarAlCarrito = () => {
+    setCarrito([
+      {
+        id: Date.now(),
+        nombre: selectedPizza.nombre,
+        tamano: tamano?.nombre || "Normal",
+        extras: extras.map((e) => e.nombre),
+        cantidad,
+        total: calcularTotal(),
+      },
+      ...carrito,
+    ]);
+
+    setOpenAgregar(false);
+    setTamano(null);
+    setExtras([]);
+    setCantidad(1);
+  };
+
+  const eliminarDelCarrito = (id) => {
+    setCarrito(carrito.filter((p) => p.id !== id));
+  };
+
+  const totalPedido = carrito.reduce((acc, p) => acc + p.total, 0);
+
+  const mensajeWhatsapp = encodeURIComponent(
+    carrito
+      .map(
+        (p, i) =>
+          `🍕 ${i + 1}. ${p.nombre}
+Tamaño: ${p.tamano}
+Extras: ${p.extras.length ? p.extras.join(", ") : "Ninguno"}
+Cantidad: ${p.cantidad}
+Subtotal: S/ ${p.total}`
+      )
+      .join("\n\n") + `\n\nTOTAL: S/ ${totalPedido}`
+  );
+
   if (loading) {
-    return <p className="text-center mt-20">Cargando menú...</p>;
+    return <p className="text-center mt-20">Cargando...</p>;
   }
 
   return (
-    // ✅ Cambiado: max-w-7xl mx-auto → w-full para ocupar todo el ancho
-    <div className="min-h-screen flex flex-col px-6 pt-12 w-full">
-      <h1 className="text-4xl font-bold text-center text-gray-800 mb-12">
-        Nuestro Menú
-      </h1>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* HERO */}
+      <section className="text-center py-14 px-6">
+        <h1 className="text-5xl font-extrabold text-gray-900">
+          Nuestro <span className="text-yellow-500">Menú</span>
+        </h1>
+        <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
+          Pizzas artesanales hechas con ingredientes frescos y tradición
+        </p>
+      </section>
 
-      {/* BUSCADOR */}
-      <div className="max-w-md mx-auto mb-12">
-        <input
-          type="text"
-          placeholder="Buscar producto..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full bg-gray-100 border border-gray-300 rounded-xl p-3 shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-yellow-500"
-        />
-      </div>
-
-      {/* CATEGORÍAS */}
-      <div className="flex flex-wrap justify-center gap-4 mb-12">
-        {categorias.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-6 py-2 rounded-xl font-semibold transition shadow-md
-              ${
-                activeCategory === cat
-                  ? "bg-yellow-500 text-black"
-                  : "bg-white border border-yellow-500 text-gray-700 hover:bg-yellow-500 hover:text-black"
-              }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* PRODUCTOS DESDE MONGODB */}
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-        {filtrarProductos.map((p) => (
-          <div
-            key={p._id}
-            className="bg-white border border-yellow-500 shadow-2xl rounded-2xl p-5
-            flex flex-col items-center text-center hover:scale-[1.02] transition-all"
-          >
-            <img
-              src={p.img}
-              alt={p.nombre}
-              className="w-full h-40 object-cover rounded-xl mb-4 shadow"
+      {/* FILTROS */}
+      <div className="max-w-6xl mx-auto px-6 w-full space-y-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              className="w-full pl-12 py-3 border rounded-xl bg-gray-50"
+              placeholder="Buscar pizzas..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
+          </div>
 
-            <h3 className="text-lg font-bold text-gray-800 mb-1">
-              {p.nombre}
-            </h3>
-            <p className="text-gray-600 mb-3">{p.categoria}</p>
+          <div className="relative w-full md:w-56">
+            <button
+              onClick={() => setOpenCategorias(!openCategorias)}
+              className="w-full py-3 px-4 border rounded-xl flex justify-between"
+            >
+              {activeCategory} <span>▾</span>
+            </button>
 
-            <p className="text-xl font-bold text-yellow-600 mb-4">
-              S/ {p.precio}
-            </p>
+            {openCategorias && (
+              <div className="absolute w-full bg-white border rounded-xl mt-2 shadow">
+                {categorias.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setActiveCategory(cat);
+                      setOpenCategorias(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-yellow-50"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-            <button className="w-full bg-yellow-500 text-black py-2 rounded-xl font-semibold hover:bg-yellow-600 transition shadow-md">
-              Agregar al carrito
+      {/* TARJETAS */}
+      <main className="flex-1 max-w-6xl mx-auto px-6 py-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
+          {filtrarProductos.map((p) => (
+            <div
+              key={p._id}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden"
+            >
+              <img
+                src={p.img}
+                alt={p.nombre}
+                className="h-48 w-full object-cover"
+              />
+
+              <div className="p-4">
+                <div className="flex justify-between">
+                  <h3 className="font-bold">{p.nombre}</h3>
+                  <span className="flex items-center gap-1 text-sm bg-yellow-100 px-2 py-1 rounded-full">
+                    <FaStar className="text-yellow-500 text-xs" /> 4.8
+                  </span>
+                </div>
+
+                <p className="text-yellow-600 font-extrabold text-xl mt-2">
+                  S/ {p.precio}
+                </p>
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedPizza(p);
+                      setOpenInfo(true);
+                    }}
+                    className="border py-2 rounded-lg flex justify-center gap-1"
+                  >
+                    <FaInfoCircle /> Info
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedPizza(p);
+                      setOpenAgregar(true);
+                    }}
+                    className="bg-yellow-500 text-white py-2 rounded-lg flex justify-center gap-1"
+                  >
+                    <FaPlusCircle /> Agregar
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* MODAL AGREGAR */}
+      {openAgregar && selectedPizza && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-96 space-y-4">
+            <h3 className="font-bold text-xl">{selectedPizza.nombre}</h3>
+
+            {selectedPizza.tamanos?.map((t) => (
+              <label key={t.nombre} className="block">
+                <input
+                  type="radio"
+                  name="tamano"
+                  onChange={() => setTamano(t)}
+                />{" "}
+                {t.nombre} (+S/ {t.precio})
+              </label>
+            ))}
+
+            {selectedPizza.extras?.map((e) => (
+              <label key={e.nombre} className="block">
+                <input
+                  type="checkbox"
+                  onChange={(ev) =>
+                    ev.target.checked
+                      ? setExtras([...extras, e])
+                      : setExtras(
+                          extras.filter((x) => x.nombre !== e.nombre)
+                        )
+                  }
+                />{" "}
+                {e.nombre} (+S/ {e.precio})
+              </label>
+            ))}
+
+            <div className="flex items-center gap-4">
+              <button onClick={() => setCantidad(Math.max(1, cantidad - 1))}>
+                <FaMinus />
+              </button>
+              <span>{cantidad}</span>
+              <button onClick={() => setCantidad(cantidad + 1)}>
+                <FaPlus />
+              </button>
+            </div>
+
+            <p className="font-bold">Total: S/ {calcularTotal()}</p>
+
+            <button
+              onClick={agregarAlCarrito}
+              className="w-full bg-yellow-500 text-white py-2 rounded-xl"
+            >
+              Confirmar
             </button>
           </div>
-        ))}
-      </div>
-
-      {/* MENSAJE CUANDO NO HAY PRODUCTOS */}
-      {filtrarProductos.length === 0 && (
-        <p className="text-center text-gray-500 mt-10 text-lg">
-          No hay productos registrados aún
-        </p>
+        </div>
       )}
 
-      {/* FOOTER — con flex-grow para ocupar casi toda la pantalla */}
-      <div className="mt-10 `flex-grow`">
-        <Footer />
-      </div>
+      {/* BOTÓN CARRITO */}
+      <button
+        onClick={() => setOpenCarrito(true)}
+        className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full"
+      >
+        <FaShoppingCart />
+      </button>
+
+      {/* CARRITO */}
+      {openCarrito && (
+        <div className="fixed inset-0 bg-black/50 flex justify-end z-50">
+          <div className="bg-white w-96 p-6">
+            <h3 className="font-bold text-xl mb-4">Tu pedido</h3>
+
+            {carrito.map((p) => (
+              <div key={p.id} className="border-b py-2">
+                <div className="flex justify-between">
+                  <span>{p.nombre}</span>
+                  <button onClick={() => eliminarDelCarrito(p.id)}>
+                    <FaTrash />
+                  </button>
+                </div>
+                <p className="text-sm">Tamaño: {p.tamano}</p>
+                <p className="text-sm">
+                  Extras: {p.extras.join(", ") || "Ninguno"}
+                </p>
+                <p className="font-bold">S/ {p.total}</p>
+              </div>
+            ))}
+
+            <p className="font-bold mt-4">TOTAL: S/ {totalPedido}</p>
+
+            <a
+              href={`https://wa.me/51914068562?text=${mensajeWhatsapp}`}
+              target="_blank"
+              className="block bg-green-500 text-white text-center py-2 rounded-xl mt-4"
+            >
+              Enviar pedido
+            </a>
+
+            <button
+              onClick={() => setOpenCarrito(false)}
+              className="w-full mt-2 border py-2 rounded-xl"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      <Footer />
     </div>
   );
 }
