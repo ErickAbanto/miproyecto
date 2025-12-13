@@ -1,5 +1,5 @@
 import { CgProfile } from "react-icons/cg";
-import { Menu, X, UserRound, ChevronDown, ShoppingCart } from "lucide-react";
+import { Menu, X, UserRound, ChevronDown } from "lucide-react"; // ← ShoppingCart eliminado
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -12,9 +12,12 @@ import {
 
 function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
-  const menuRef = useRef();
+  const menuRef = useRef(null);
 
-  // Cerrar menú al hacer clic fuera
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  // Cerrar menú móvil al hacer clic fuera
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -29,10 +32,25 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenu]);
 
+  // Cerrar dropdown de perfil al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutsideProfile(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutsideProfile);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutsideProfile);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutsideProfile);
+  }, [profileOpen]);
+
   return (
     <nav className="fixed top-0 left-0 w-full bg-[#fff7e8] z-50 shadow-lg py-4 px-6 flex justify-between items-center transition-all duration-300">
 
-      {/* LOGO */}
+      {/* LOGO — izquierda */}
       <Link to="/" className="flex items-center gap-3">
         <div className="w-[60px] h-[60px] bg-white rounded-full flex items-center justify-center border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden transition-transform duration-300 hover:scale-105">
           <img
@@ -46,78 +64,115 @@ function Navbar() {
         </span>
       </Link>
 
-      {/* ICONO HAMBURGUESA */}
-      <button
-        onClick={() => setOpenMenu(!openMenu)}
-        className="lg:hidden w-12 h-12 flex items-center justify-center bg-white border-4 border-black rounded-full shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all duration-300 relative"
-      >
-        <span
-          className={`absolute transition-all duration-300 ${openMenu ? "rotate-90 opacity-0" : "opacity-100 rotate-0"
-            }`}
-        >
-          <Menu size={28} strokeWidth={3} />
-        </span>
-        <span
-          className={`absolute transition-all duration-300 ${openMenu ? "opacity-100 rotate-0" : "opacity-0 rotate-90"
-            }`}
-        >
-          <X size={28} strokeWidth={3} />
-        </span>
-      </button>
-
-      {/* MENÚ DESKTOP */}
-      <ul className="hidden lg:flex items-center gap-10 text-sm font-bold text-black">
+      {/* MENÚ CENTRAL (DESKTOP) */}
+      <ul className="hidden lg:flex items-center gap-8 text-sm font-bold text-black justify-center">
         <li className="hover:text-yellow-600 transition-all duration-200">
-          <Link to="/">Inicio</Link>
+          <Link to="/" onClick={() => setOpenMenu(false)}>Inicio</Link>
         </li>
         <li className="hover:text-yellow-600 transition-all duration-200">
-          <Link to="/menu">Menú</Link>
+          <Link to="/menu" onClick={() => setOpenMenu(false)}>Menú</Link>
         </li>
         <li className="hover:text-yellow-600 transition-all duration-200">
-          <Link to="/promociones">Promociones</Link>
+          <Link to="/promociones" onClick={() => setOpenMenu(false)}>Promociones</Link>
         </li>
         <li className="hover:text-yellow-600 transition-all duration-200">
-          <Link to="/sobre-nosotros">Sobre Nosotros</Link>
+          <Link to="/sobre-nosotros" onClick={() => setOpenMenu(false)}>Sobre Nosotros</Link>
         </li>
         <li className="hover:text-yellow-600 transition-all duration-200">
-          <Link to="/contacto">Contacto</Link>
+          <Link to="/contacto" onClick={() => setOpenMenu(false)}>Contacto</Link>
         </li>
       </ul>
 
-      {/* LOGIN → ICONOS → CARRITO (DESKTOP) */}
-      <div className="hidden lg:flex items-center gap-6">
+      {/* DERECHA: Login + Perfil */}
+      <div className="flex items-center gap-6">
 
-        {/* INICIAR SESIÓN SOLO */}
+        {/* INICIAR SESIÓN */}
         <Link
           to="/iniciar-sesion"
-          className="font-medium text-black hover:text-yellow-600 transition-all duration-200"
+          className="font-medium text-black hover:text-yellow-600 transition-all duration-200 hidden lg:block"
         >
           Iniciar Sesión
         </Link>
 
-        {/* ICONOS USER + DROP */}
+        {/* PERFIL DROPDOWN */}
+        <div className="relative">
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="flex items-center gap-1 text-black hover:text-yellow-600 transition-all duration-200"
+            aria-label="Perfil"
+          >
+            <CgProfile size={22} />
+            <ChevronDown
+              size={22}
+              className={`transition-transform duration-300 ${profileOpen ? "rotate-180" : "rotate-0"
+                }`}
+            />
+          </button>
+
+          {/* Dropdown */}
+          {profileOpen && (
+            <div
+              ref={profileRef}
+              className="absolute right-0 mt-2 w-48 bg-white border-4 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] rounded-xl overflow-hidden z-50"
+            >
+              <ul className="py-2">
+                <li>
+                  <Link
+                    to="/perfil"
+                    className="block px-4 py-2 text-black hover:bg-yellow-100 font-medium transition-colors"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <UserRound size={16} className="inline-block mr-2" />
+                    Mi Perfil
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin"
+                    className="block px-4 py-2 text-black hover:bg-yellow-100 font-medium transition-colors"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <CgProfile size={16} className="inline-block mr-2" />
+                    Admin Panel
+                  </Link>
+                </li>
+                <li className="border-t-2 border-black/10 mt-1 pt-1">
+                  <button
+                    onClick={() => {
+                      // Aquí puedes agregar lógica de logout
+                      setProfileOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-black hover:bg-yellow-100 font-medium transition-colors"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* HAMBURGUESA (solo móvil) — alineado a la derecha */}
         <button
-          className="flex items-center gap-1 text-black hover:text-yellow-600 transition-all duration-200"
+          onClick={() => setOpenMenu(!openMenu)}
+          className="lg:hidden w-12 h-12 flex items-center justify-center bg-white border-4 border-black rounded-full shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all duration-300 relative"
         >
-          <CgProfile size={22} />
-          <ChevronDown
-            size={22}
-            className="transition-transform duration-300"
-          />
+          <span
+            className={`absolute transition-all duration-300 ${openMenu ? "rotate-90 opacity-0" : "opacity-100 rotate-0"
+              }`}
+          >
+            <Menu size={28} strokeWidth={3} />
+          </span>
+          <span
+            className={`absolute transition-all duration-300 ${openMenu ? "opacity-100 rotate-0" : "opacity-0 rotate-90"
+              }`}
+          >
+            <X size={28} strokeWidth={3} />
+          </span>
         </button>
-
-        {/* CARRITO */}
-        <Link
-          to="/carrito"
-          className="flex items-center gap-2 text-black hover:text-yellow-600 transition-all duration-200 font-bold"
-        >
-          <ShoppingCart size={26} strokeWidth={3} />
-          Carrito
-        </Link>
-
       </div>
 
-      {/* OVERLAY + MENÚ MÓVIL */}
+      {/* MENÚ MÓVIL (igual, pero sin carrito) */}
       {openMenu && (
         <>
           <div className="fixed inset-0 bg-black/30 z-40 lg:hidden"></div>
@@ -134,8 +189,8 @@ function Navbar() {
               <X size={24} />
             </button>
 
-            {/* Header logo */}
-            <div className="flex items-center gap-3 mb-4">
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8">
               <div className="w-[55px] h-[55px] bg-white rounded-full flex items-center justify-center border-4 border-black shadow-[5px_5px_0px_rgba(0,0,0,1)] overflow-hidden">
                 <img
                   src="/imgs/logo.png"
@@ -149,7 +204,7 @@ function Navbar() {
             </div>
 
             {/* Links */}
-            <div className="flex flex-col gap-6 mt-2">
+            <div className="flex flex-col gap-6">
               <Link to="/" onClick={() => setOpenMenu(false)} className="flex items-center gap-3 text-lg font-bold hover:text-yellow-600">
                 <FaHome size={22} /> Inicio
               </Link>
@@ -167,23 +222,14 @@ function Navbar() {
               </Link>
             </div>
 
-            {/* INICIAR SESIÓN FIRST (Mobile) */}
+            {/* Iniciar sesión (móvil) */}
             <Link
               to="/iniciar-sesion"
               onClick={() => setOpenMenu(false)}
-              className="flex items-center gap-3 text-lg font-bold mt-6 hover:text-yellow-600"
+              className="mt-auto flex items-center justify-center gap-3 text-lg font-bold py-3 bg-black text-white rounded-xl border-4 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
+              hover:bg-yellow-500 hover:text-black transition-all duration-300 hover:shadow-[7px_7px_0px_0px_rgba(0,0,0,1)] active:scale-95"
             >
               Iniciar Sesión
-            </Link>
-
-            {/* CARRITO AFTER (Mobile) */}
-            <Link
-              to="/carrito"
-              onClick={() => setOpenMenu(false)}
-              className="flex items-center gap-3 text-lg font-bold bg-black text-white px-5 py-3 rounded-xl border-4 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
-              hover:bg-yellow-500 hover:text-black transition-all duration-300 hover:shadow-[7px_7px_0px_0px_rgba(0,0,0,1)] active:scale-95 mt-4"
-            >
-              <ShoppingCart size={24} /> Carrito
             </Link>
           </div>
         </>

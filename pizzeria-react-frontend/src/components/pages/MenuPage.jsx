@@ -39,7 +39,8 @@ function MenuPage() {
   }
 
   return (
-    <div className="px-6 pt-12 pb-20 max-w-7xl mx-auto flex-1">
+    // ✅ Cambiado: max-w-7xl mx-auto → w-full para ocupar todo el ancho
+    <div className="min-h-screen flex flex-col px-6 pt-12 w-full">
       <h1 className="text-4xl font-bold text-center text-gray-800 mb-12">
         Nuestro Menú
       </h1>
@@ -111,9 +112,10 @@ function MenuPage() {
         </p>
       )}
 
-      <footer className="w-full mt-10">
+      {/* FOOTER — con flex-grow para ocupar casi toda la pantalla */}
+      <div className="mt-10 `flex-grow`">
         <Footer />
-      </footer>
+      </div>
     </div>
   );
 }
