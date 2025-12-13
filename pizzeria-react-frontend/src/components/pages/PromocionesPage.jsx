@@ -99,8 +99,8 @@ const OfertaCard = ({ oferta }) => {
 };
 
 export default function PromocionesPage() {
-  // Mensaje predefinido para el WhatsApp flotante
-  const mensaje = "¡Hola! Quisiera saber más sobre sus promociones.";
+  // Mensaje predefinido para WhatsApp (¡personalízalo como quieras!)
+  const mensaje = "¡Hola! Quisiera saber más sobre las promociones de su pizzería.";
   const whatsappUrl = `https://wa.me/51999999999?text=${encodeURIComponent(mensaje)}`;
 
   return (
@@ -126,18 +126,17 @@ export default function PromocionesPage() {
         <Footer />
       </div>
 
-{/* ÍCONO FLOTANTE DE WHATSAPP — con texto "Consultar" */}
-<a
-  href="https://wa.me/51999999999?text=¡Hola!%20Quisiera%20saber%20más%20sobre%20Pizzería%20Ohana."
-  target="_blank"
-  rel="noopener noreferrer"
-  className="fixed bottom-6 right-6 flex items-center justify-center bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all z-50
-    w-14 h-14 lg:w-32 lg:h-14"
-  aria-label="Contacto por WhatsApp"
->
-  <FaWhatsapp size={24} />
-  <span className="ml-2 font-medium hidden lg:inline">Consultar</span>
-</a>
+      {/* ✅ ÍCONO FLOTANTE DE WHATSAPP — ahora usa la variable whatsappUrl */}
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 flex items-center justify-center bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all z-50 w-14 h-14 lg:w-32 lg:h-14"
+        aria-label="Contacto por WhatsApp"
+      >
+        <FaWhatsapp size={24} />
+        <span className="ml-2 font-medium hidden lg:inline">Consultar</span>
+      </a>
     </div>
   );
 }
