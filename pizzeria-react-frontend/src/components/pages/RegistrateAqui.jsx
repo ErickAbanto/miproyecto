@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import Footer from "../organisms/Footer";
 import {
   FaEnvelope,
   FaLock,
@@ -6,154 +8,260 @@ import {
   FaPhoneAlt,
   FaFacebookF,
   FaInstagram,
-  FaTwitter
+  FaTwitter,
+  FaExclamationTriangle,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
 
 function RegistrateAqui() {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // Validaciones en frontend
+    if (!nombre.trim()) {
+      setError("Por favor, ingrese su nombre completo.");
+      return;
+    }
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      setError("Por favor, ingrese un correo electrónico válido.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:3000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          nombre: nombre.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al crear la cuenta.");
+      }
+
+      // Registro exitoso → redirigir al login con mensaje de éxito (opcional)
+      alert("¡Cuenta creada con éxito! Ahora puede iniciar sesión.");
+      navigate("/iniciar-sesion");
+    } catch (err) {
+      setError(err.message || "Error de conexión con el servidor.");
+      console.error("[Register Error]", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="w-full bg-gray-100">
-      <div className="w-full flex items-start justify-center px-4 py-12">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-10 border-2 border-yellow-500">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 flex flex-col">
+      {/* Optional header */}
+      <header className="py-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-800">
+          <span className="text-yellow-600">Ohana</span> Pizzería
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Crea tu cuenta y disfruta de nuestras ofertas
+        </p>
+      </header>
 
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-            Crear Cuenta
-          </h2>
+      <main className="flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-yellow-200">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Crear Cuenta
+            </h2>
+            <p className="text-gray-500 mt-2 text-sm">
+              ¡Únete a la familia Ohana hoy!
+            </p>
+          </div>
 
-          <form className="space-y-6">
+          {error && (
+            <div
+              className="flex items-center gap-2 p-3 mb-5 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200"
+              role="alert"
+            >
+              <FaExclamationTriangle className="shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Nombre */}
             <div>
-              <label className="text-gray-700 font-semibold text-sm">Nombre Completo</label>
-              <div className="mt-2 bg-gray-100 p-3 rounded-xl border border-gray-300">
-                <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  className="w-full bg-transparent outline-none text-gray-700 text-sm"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                />
-              </div>
+              <label
+                htmlFor="nombre"
+                className="block text-gray-700 font-medium text-sm mb-1"
+              >
+                Nombre Completo
+              </label>
+              <input
+                id="nombre"
+                type="text"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Ej: Juan Pérez"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                disabled={isLoading}
+                autoComplete="name"
+              />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="text-gray-700 font-semibold text-sm">Correo Electrónico</label>
-              <div className="mt-2 flex items-center gap-3 bg-gray-100 p-3 rounded-xl border border-gray-300">
-                <FaEnvelope className="text-gray-500 text-lg" />
+              <label
+                htmlFor="email"
+                className="block text-gray-700 font-medium text-sm mb-1"
+              >
+                Correo Electrónico
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <FaEnvelope />
+                </div>
                 <input
+                  id="email"
                   type="email"
-                  placeholder="Ingrese su correo"
-                  className="w-full bg-transparent outline-none text-gray-700 text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ejemplo@gmail.com"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                  disabled={isLoading}
+                  autoComplete="email"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="text-gray-700 font-semibold text-sm">Contraseña</label>
-              <div className="mt-2 flex items-center gap-3 bg-gray-100 p-3 rounded-xl border border-gray-300">
-                <FaLock className="text-gray-500 text-lg" />
+              <label
+                htmlFor="password"
+                className="block text-gray-700 font-medium text-sm mb-1"
+              >
+                Contraseña
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <FaLock />
+                </div>
                 <input
+                  id="password"
                   type="password"
-                  placeholder="Ingrese su contraseña"
-                  className="w-full bg-transparent outline-none text-gray-700 text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                  disabled={isLoading}
+                  autoComplete="new-password"
                 />
               </div>
             </div>
 
+            {/* Confirm Password */}
             <div>
-              <label className="text-gray-700 font-semibold text-sm">Confirmar Contraseña</label>
-              <div className="mt-2 flex items-center gap-3 bg-gray-100 p-3 rounded-xl border border-gray-300">
-                <FaLock className="text-gray-500 text-lg" />
+              <label
+                htmlFor="confirm"
+                className="block text-gray-700 font-medium text-sm mb-1"
+              >
+                Confirmar Contraseña
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <FaLock />
+                </div>
                 <input
+                  id="confirm"
                   type="password"
-                  placeholder="Repita su contraseña"
-                  className="w-full bg-transparent outline-none text-gray-700 text-sm"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                  disabled={isLoading}
+                  autoComplete="new-password"
                 />
               </div>
             </div>
 
-            <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 rounded-xl text-lg transition-all">
-              Registrarse
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all ${
+                isLoading
+                  ? "bg-yellow-400 cursor-not-allowed"
+                  : "bg-yellow-600 hover:bg-yellow-700 active:scale-95"
+              }`}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Registrando...
+                </span>
+              ) : (
+                "Crear Cuenta"
+              )}
             </button>
-
           </form>
 
-          <p className="text-center text-gray-600 mt-6 text-sm">
-            ¿Ya tienes cuenta?{" "}
-            <Link
-              to="/iniciar-sesion"
-              className="text-yellow-600 font-bold hover:underline"
-            >
-              Iniciar sesión
-            </Link>
-          </p>
-
-        </div>
-      </div>
-
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-200 py-10 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between gap-8">
-
-          <div className="w-full sm:w-auto flex-1 min-w-[180px]">
-            <h4 className="text-lg font-bold text-yellow-500 mb-4">Información</h4>
-
-            <p className="mb-2 text-gray-400 flex items-center gap-2">
-              <FaMapMarkerAlt className="text-yellow-500" />
-              Calle Principal 123, Ciudad
-            </p>
-
-            <p className="mb-2 text-gray-400 flex items-center gap-2">
-              <FaPhoneAlt className="text-yellow-500" />
-              +1 234 567 8900
-            </p>
-
-            <p className="mb-2 text-gray-400 flex items-center gap-2">
-              <FaEnvelope className="text-yellow-500" />
-              hola@olimpiapizza.com
+          <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+            <p className="text-gray-600 text-sm">
+              ¿Ya tienes cuenta?
+              <br />
+              <Link
+                to="/iniciar-sesion"
+                className="inline-block mt-1 font-semibold text-yellow-600 hover:text-yellow-800 hover:underline"
+              >
+                Inicia sesión aquí
+              </Link>
             </p>
           </div>
-
-          <div className="w-full sm:w-auto flex-1 min-w-[180px]">
-            <h4 className="text-lg font-bold text-yellow-500 mb-4">Links Rápidos</h4>
-
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-400 hover:text-white">Inicio</Link></li>
-              <li><Link to="/menu" className="text-gray-400 hover:text-white">Menú</Link></li>
-              <li><Link to="/promociones" className="text-gray-400 hover:text-white">Promociones</Link></li>
-              <li><Link to="/sobre-nosotros" className="text-gray-400 hover:text-white">Sobre Nosotros</Link></li>
-              <li><Link to="/contacto" className="text-gray-400 hover:text-white">Contacto</Link></li>
-            </ul>
-          </div>
-
-          <div className="w-full sm:w-auto min-w-[180px]">
-            <h4 className="text-lg font-bold text-yellow-500 mb-4">Síguenos</h4>
-
-            <div className="flex space-x-4 text-2xl">
-              <a href="https://facebook.com" className="text-white hover:text-yellow-500"><FaFacebookF /></a>
-              <a href="https://instagram.com" className="text-white hover:text-yellow-500"><FaInstagram /></a>
-              <a href="https://twitter.com" className="text-white hover:text-yellow-500"><FaTwitter /></a>
-            </div>
-          </div>
-
         </div>
+      </main>
 
-        <hr className="my-8 border-gray-700 max-w-7xl mx-auto" />
-
-        <div className="text-center text-sm text-gray-500">
-          © 2025 Olimpia Pizza. Todos los derechos reservados.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

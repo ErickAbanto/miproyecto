@@ -6,7 +6,7 @@ export default function SobreNosotrosPage() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       {/* HERO */}
-      <section className="py-12 px-4 sm:px-6 md:px-8 text-center bg-gradient-to-r from-yellow-50 to-white">
+      <section className="py-12 px-4 sm:px-6 md:px-8 text-center bg-linear-to-r from-yellow-50 to-white">
         <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
           Sobre <span className="text-yellow-600">Nosotros</span>
         </h1>
@@ -131,7 +131,7 @@ export default function SobreNosotrosPage() {
       </main>
 
       {/* FOOTER */}
-      <div className="mt-10 flex-grow">
+      <div className="mt-10 grow">
         <Footer />
       </div>
     </div>

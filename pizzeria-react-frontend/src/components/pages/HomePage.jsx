@@ -82,8 +82,8 @@ function HomePage() {
           </div>
           <div>
             <h3 className="text-xl font-bold mb-2">Contacto</h3>
-            <p className="text-gray-300 text-sm">Tel: +51 999 999 999</p>
-            <p className="text-gray-300 text-sm">Email: contacto@pizzeriaohana.com</p>
+            <p className="text-gray-300 text-sm">Tel: +51 910 151 588 </p>
+            <p className="text-gray-300 text-sm">Email:</p>
           </div>
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-yellow-500"><FaFacebook size={20} /></a>
@@ -95,21 +95,6 @@ function HomePage() {
           &copy; {new Date().getFullYear()} Pizzería Ohana. Todos los derechos reservados.
         </div>
       </footer>
-
-      {/* ÍCONO FLOTANTE DE WHATSAPP — ahora con comportamiento inteligente */}
-<a
-  href="https://wa.me/51999999999?text=¡Hola!%20Quisiera%20pedir%20una%20pizza%20🍕"
-  target="_blank"
-  rel="noopener noreferrer"
-  className={`fixed bottom-6 right-6 w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-all z-50
-    transform ease-in-out duration-300 ${
-      showWhatsApp ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'
-    }`}
-  aria-label="Contacto por WhatsApp"
->
-  <FaWhatsapp size={24} />
-</a>
-
     </main>
   );
 }
