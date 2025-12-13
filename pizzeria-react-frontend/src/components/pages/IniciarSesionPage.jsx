@@ -1,173 +1,212 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
-import {
-  FaEnvelope,
-  FaLock,
-  FaMapMarkerAlt,
-  FaPhoneAlt,
-  FaFacebookF,
-  FaInstagram,
-  FaTwitter,
-} from "react-icons/fa";
+import Footer from "../organisms/Footer";
+import { FaEnvelope, FaLock, FaExclamationTriangle } from "react-icons/fa";
 
 function IniciarSesionPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ---------------------- SUBMIT ----------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    // Validación básica en frontend
+    if (!email.trim() || !password.trim()) {
+      setError("Por favor, complete todos los campos.");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Por favor, ingrese un correo válido.");
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      const request = await fetch("http://localhost:3000/login", {
+      const response = await fetch("http://localhost:3000/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+        credentials: "include", // ← necesario si usas cookies (HttpOnly)
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      if (!request.ok) throw new Error("Usuario y/o contraseña inválidos.");
+      const data = await response.json();
 
-      const response = await request.json();
+      if (!response.ok) {
+        // Usa el mensaje del backend si existe, o genérico
+        throw new Error(data.error || "Usuario y/o contraseña inválidos.");
+      }
 
-      switch (response.role) {
+      //  Login exitoso → redirigir según rol
+      switch (data.role) {
         case "C":
-          navigate("/cdashboard");
+          navigate("/cdashboard", { replace: true });
           break;
         case "A":
-          navigate("/adashboard");
+          navigate("/adashboard", { replace: true });
           break;
         case "V":
-          navigate("/vdashboard");
+          navigate("/vdashboard", { replace: true });
           break;
         default:
-          navigate("/");
-          break;
+          navigate("/", { replace: true });
       }
     } catch (err) {
-      setError(err.message);
-      console.log(err);
+      setError(err.message || "Error al conectar con el servidor.");
+      console.error("[Login Error]", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full bg-gray-100">
-      <div className="w-full flex items-start justify-center px-4 py-12">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-10 border-2 border-yellow-500">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 flex flex-col">
+      {/* Optional: Brand header */}
+      <header className="py-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-800">
+          <span className="text-yellow-600">Ohana</span> Pizzería
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">¡Bienvenido de nuevo!</p>
+      </header>
 
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-            Iniciar Sesión
-          </h2>
+      <main className="flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-yellow-200">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Iniciar Sesión
+            </h2>
+            <p className="text-gray-500 mt-2 text-sm">
+              Accede a tu cuenta para continuar
+            </p>
+          </div>
 
           {error && (
-            <p className="text-red-600 font-semibold text-center mb-4">{error}</p>
+            <div
+              className="flex items-center gap-2 p-3 mb-5 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200"
+              role="alert"
+            >
+              <FaExclamationTriangle className="shrink-0" />
+              <span>{error}</span>
+            </div>
           )}
 
-          {/* FORM */}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
-              <label className="text-gray-700 font-semibold text-sm">Email</label>
-              <div className="mt-2 flex items-center gap-3 bg-gray-100 p-3 rounded-xl border border-gray-300">
-                <FaEnvelope className="text-gray-500 text-lg" />
+              <label
+                htmlFor="email"
+                className="block text-gray-700 font-medium text-sm mb-1"
+              >
+                Correo Electrónico
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <FaEnvelope />
+                </div>
                 <input
+                  id="email"
                   type="email"
-                  placeholder="Ingrese su correo"
-                  className="w-full bg-transparent outline-none text-gray-700 text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ejemplo@pizzeriaohana.com"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                  disabled={isLoading}
+                  autoComplete="email"
+                  aria-describedby={error ? "error-message" : undefined}
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="text-gray-700 font-semibold text-sm">Password</label>
-              <div className="mt-2 flex items-center gap-3 bg-gray-100 p-3 rounded-xl border border-gray-300">
-                <FaLock className="text-gray-500 text-lg" />
+              <label
+                htmlFor="password"
+                className="block text-gray-700 font-medium text-sm mb-1"
+              >
+                Contraseña
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <FaLock />
+                </div>
                 <input
+                  id="password"
                   type="password"
-                  placeholder="Ingrese su contraseña"
-                  className="w-full bg-transparent outline-none text-gray-700 text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                  disabled={isLoading}
+                  autoComplete="current-password"
                 />
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 rounded-xl text-lg transition-all"
+              disabled={isLoading}
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all ${
+                isLoading
+                  ? "bg-yellow-400 cursor-not-allowed"
+                  : "bg-yellow-600 hover:bg-yellow-700 active:scale-95"
+              }`}
             >
-              Entrar
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Iniciando...
+                </span>
+              ) : (
+                "Iniciar Sesión"
+              )}
             </button>
           </form>
 
-          <p className="text-center text-gray-600 mt-6 text-sm">
-            ¿No tienes cuenta?{" "}
-            <Link
-              to="/registrate-aqui"
-              className="text-yellow-600 font-bold hover:underline"
-            >
-              Crear cuenta
-            </Link>
-          </p>
-
-        </div>
-      </div>
-
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-200 py-10 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between gap-8">
-
-          <div className="w-full sm:w-auto flex-1 min-w-[180px]">
-            <h4 className="text-lg font-bold text-yellow-500 mb-4">Información</h4>
-            <p className="mb-2 text-gray-400 flex items-center gap-2">
-              <FaMapMarkerAlt className="text-yellow-500" />
-              Calle Principal 123, Ciudad
-            </p>
-            <p className="mb-2 text-gray-400 flex items-center gap-2">
-              <FaPhoneAlt className="text-yellow-500" />
-              +1 234 567 8900
-            </p>
-            <p className="mb-2 text-gray-400 flex items-center gap-2">
-              <FaEnvelope className="text-yellow-500" />
-              hola@olimpiapizza.com
+          {/* Register Link */}
+          <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+            <p className="text-gray-600 text-sm">
+              ¿Eres nuevo en{" "}
+              <span className="font-semibold text-gray-800">Ohana</span>?
+              <br />
+              <Link
+                to="/registrate-aqui"
+                className="inline-block mt-1 font-semibold text-yellow-600 hover:text-yellow-800 hover:underline transition"
+              >
+                Regístrate aquí
+              </Link>
             </p>
           </div>
-
-          <div className="w-full sm:w-auto flex-1 min-w-[180px]">
-            <h4 className="text-lg font-bold text-yellow-500 mb-4">Links Rápidos</h4>
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-400 hover:text-white">Inicio</Link></li>
-              <li><Link to="/menu" className="text-gray-400 hover:text-white">Menú</Link></li>
-              <li><Link to="/promociones" className="text-gray-400 hover:text-white">Promociones</Link></li>
-              <li><Link to="/sobre-nosotros" className="text-gray-400 hover:text-white">Sobre Nosotros</Link></li>
-              <li><Link to="/contacto" className="text-gray-400 hover:text-white">Contacto</Link></li>
-            </ul>
-          </div>
-
-          <div className="w-full sm:w-auto min-w-[180px]">
-            <h4 className="text-lg font-bold text-yellow-500 mb-4">Síguenos</h4>
-            <div className="flex space-x-4 text-2xl">
-              <a href="https://facebook.com" className="text-white hover:text-yellow-500"><FaFacebookF /></a>
-              <a href="https://instagram.com" className="text-white hover:text-yellow-500"><FaInstagram /></a>
-              <a href="https://twitter.com" className="text-white hover:text-yellow-500"><FaTwitter /></a>
-            </div>
-          </div>
-
         </div>
+      </main>
 
-        <hr className="my-8 border-gray-700 max-w-7xl mx-auto" />
-
-        <div className="text-center text-sm text-gray-500">
-          © 2025 Olimpia Pizza. Todos los derechos reservados.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

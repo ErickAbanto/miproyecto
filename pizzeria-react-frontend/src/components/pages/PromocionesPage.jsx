@@ -84,14 +84,12 @@ const OfertaCard = ({ oferta }) => {
         </div>
 
         <div>
-          <div className="mb-4">
-            <span className="line-through text-gray-400 mr-3">
-              {precioAnterior}
-            </span>
-            <span className="text-2xl font-bold text-gray-800">
-              {precioActual}
-            </span>
-          </div>
+          <span className="line-through text-gray-400 mr-3">
+            {precioAnterior}
+          </span>
+          <span className="text-2xl font-bold text-gray-800">
+            {precioActual}
+          </span>
         </div>
       </div>
     </div>
@@ -99,9 +97,12 @@ const OfertaCard = ({ oferta }) => {
 };
 
 export default function PromocionesPage() {
-  // Mensaje predefinido para el WhatsApp flotante
-  const mensaje = "¡Hola! Quisiera saber más sobre sus promociones.";
-  const whatsappUrl = `https://wa.me/51999999999?text=${encodeURIComponent(mensaje)}`;
+  // Mensaje predefinido para WhatsApp
+  const mensaje =
+    "¡Hola! Quisiera saber más sobre las promociones de Pizzería Ohana y realizar un pedido.";
+  const whatsappUrl = `https://wa.me/51910151588?text=${encodeURIComponent(
+    mensaje
+  )}`;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -122,22 +123,20 @@ export default function PromocionesPage() {
         </section>
       </main>
 
-      <div className="mt-10 flex-grow">
-        <Footer />
-      </div>
+      <Footer />
 
-{/* ÍCONO FLOTANTE DE WHATSAPP — con texto "Consultar" */}
-<a
-  href="https://wa.me/51999999999?text=¡Hola!%20Quisiera%20saber%20más%20sobre%20Pizzería%20Ohana."
-  target="_blank"
-  rel="noopener noreferrer"
-  className="fixed bottom-6 right-6 flex items-center justify-center bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all z-50
-    w-14 h-14 lg:w-32 lg:h-14"
-  aria-label="Contacto por WhatsApp"
->
-  <FaWhatsapp size={24} />
-  <span className="ml-2 font-medium hidden lg:inline">Consultar</span>
-</a>
+      {/* BOTÓN FLOTANTE DE WHATSAPP */}
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 flex items-center justify-center bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all z-50
+          w-14 h-14 lg:w-32 lg:h-14"
+        aria-label="Contacto por WhatsApp"
+      >
+        <FaWhatsapp size={24} />
+        <span className="ml-2 font-medium hidden lg:inline">Consultar</span>
+      </a>
     </div>
   );
 }
