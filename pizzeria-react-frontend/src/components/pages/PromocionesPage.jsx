@@ -1,50 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Footer from "../organisms/Footer";
 import { FaRegCalendarAlt, FaWhatsapp } from "react-icons/fa";
-
-const ofertasData = [
-  {
-    id: 1,
-    titulo: "Pizza del Mes",
-    descripcion: "Especial Hawaiiana con ingredientes premium",
-    validez: "31 Dic 2025",
-    precioAnterior: "S/ 16.99",
-    precioActual: "S/ 11.99",
-    descuento: "29% OFF",
-    imagenUrl: "https://via.placeholder.com/300x200?text=Pizza+Hawaiiana",
-  },
-  {
-    id: 2,
-    titulo: "Martes de Vegetarianas",
-    descripcion: "Todas las pizzas vegetarianas con 40% de descuento",
-    validez: "Todos los martes",
-    precioAnterior: "S/ 11.99",
-    precioActual: "S/ 7.19",
-    descuento: "40% OFF",
-    imagenUrl: "https://via.placeholder.com/300x200?text=Pizza+Vegetariana",
-  },
-  {
-    id: 3,
-    titulo: "Combo Familiar",
-    descripcion: "2 pizzas medianas + bebida de 2L + palitos de queso",
-    validez: "15 Dic 2025",
-    precioAnterior: "S/ 34.99",
-    precioActual: "S/ 24.99",
-    descuento: "30% OFF",
-    imagenUrl: "https://via.placeholder.com/300x200?text=Combo+Familiar",
-  },
-  {
-    id: 4,
-    titulo: "2x1 en Pizzas Familiares",
-    descripcion:
-      "Lleva 2 pizzas familiares al precio de 1. Válido de lunes a jueves.",
-    validez: "30 Nov 2025",
-    precioAnterior: "S/ 25.98",
-    precioActual: "S/ 12.99",
-    descuento: "50% OFF",
-    imagenUrl: "https://via.placeholder.com/300x200?text=Pizza+Pepperoni",
-  },
-];
 
 const OfertaCard = ({ oferta }) => {
   const {
@@ -99,9 +55,32 @@ const OfertaCard = ({ oferta }) => {
 };
 
 export default function PromocionesPage() {
-  // Mensaje predefinido para WhatsApp (¡personalízalo como quieras!)
+  const [promociones, setPromociones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ✅ URL corregida: sin espacio extra
   const mensaje = "¡Hola! Quisiera saber más sobre las promociones de su pizzería.";
   const whatsappUrl = `https://wa.me/51999999999?text=${encodeURIComponent(mensaje)}`;
+
+  useEffect(() => {
+    const fetchPromociones = async () => {
+      try {
+        // ✅ ✅ ✅ APUNTA DIRECTAMENTE AL BACKEND ✅ ✅ ✅
+        const res = await fetch("http://localhost:3000/api/promociones");
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const data = await res.json();
+        setPromociones(data);
+      } catch (err) {
+        console.error("❌ Error al cargar promociones:", err);
+        setError("No se pudieron cargar las promociones. ¿El backend está corriendo?");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromociones();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -115,18 +94,43 @@ export default function PromocionesPage() {
           </p>
         </section>
 
-        <section>
-          {ofertasData.map((oferta) => (
-            <OfertaCard key={oferta.id} oferta={oferta} />
-          ))}
-        </section>
+        {loading ? (
+          <div className="text-center py-10">
+            <p className="text-gray-500">Cargando ofertas... 🍕</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10 text-red-500">
+            <p>⚠️ {error}</p>
+            <p className="text-sm mt-2">
+              Prueba abrir:{" "}
+              <a
+                href="http://localhost:3000/api/promociones"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+                http://localhost:3000/api/promociones
+              </a>
+            </p>
+          </div>
+        ) : (
+          <section>
+            {promociones.length > 0 ? (
+              promociones.map((oferta) => (
+                <OfertaCard key={oferta._id} oferta={oferta} />
+              ))
+            ) : (
+              <p className="text-center text-gray-500">No hay promociones disponibles por ahora.</p>
+            )}
+          </section>
+        )}
       </main>
 
       <div className="mt-10 flex-grow">
         <Footer />
       </div>
 
-      {/* ✅ ÍCONO FLOTANTE DE WHATSAPP — ahora usa la variable whatsappUrl */}
+      {/* WhatsApp flotante */}
       <a
         href={whatsappUrl}
         target="_blank"

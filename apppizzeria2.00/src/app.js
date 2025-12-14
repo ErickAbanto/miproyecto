@@ -12,9 +12,9 @@ const MONGO_URI =
 
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("Mongoose conectado a la base de datos"))
+  .then(() => console.log("✅ Mongoose conectado a la base de datos"))
   .catch((err) =>
-    console.error("Error de conexión a la base de datos:", err)
+    console.error("❌ Error de conexión a la base de datos:", err)
   );
 
 // ==================
@@ -38,7 +38,7 @@ const PizzaSchema = new mongoose.Schema(
 const Pizza = mongoose.model("Pizza", PizzaSchema);
 
 // ==================
-// RUTAS CRUD
+// RUTAS CRUD PIZZAS
 // ==================
 app.get("/api/pizzas", async (req, res) => {
   try {
@@ -81,12 +81,15 @@ app.delete("/api/pizzas/:id", async (req, res) => {
   }
 });
 
-// Ruta test navegador
+// ✅ Ruta de promociones — coherente con tu estilo (archivo: src/routes/promociones.js)
+app.use("/api/promociones", require("./routes/promociones"));
+
+// Ruta test
 app.get("/", (req, res) => {
-  res.send("Servidor backend corriendo correctamente");
+  res.send("✅ Servidor backend corriendo correctamente");
 });
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Backend en http://localhost:${PORT}`);
+  console.log(`🚀 Backend en http://localhost:${PORT}`);
 });
