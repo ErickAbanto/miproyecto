@@ -34,7 +34,7 @@ function IniciarSesionPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // IMPORTANTE para cookies HttpOnly
+        credentials: "include",
         body: JSON.stringify({
           email: email.trim(),
           password,
