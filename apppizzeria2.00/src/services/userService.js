@@ -1,19 +1,34 @@
-const bcrypt = require("bcryptjs");
-const User = require("../models/User");
+const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const User = require("../models/User")
 
-const createUser = async ({ nombreUsuario, dni, password }) => {
-  const hash = await bcrypt.hash(password, 10);
-  return User.create({ nombreUsuario, dni, password: hash });
-};
+exports.createUser = async ({ nombreUsuario, dni, password }) => {
+  const hash = await bcrypt.hash(password, 10)
 
-const loginUser = async (dni, password) => {
-  const user = await User.findOne({ dni });
-  if (!user) return null;
+  return await User.create({
+    nombreUsuario,
+    dni,
+    password: hash
+  })
+}
 
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return null;
+exports.loginUser = async (dni, password) => {
+  const user = await User.findOne({ dni })
+  if (!user) return null
 
-  return user;
-};
+  const valido = await bcrypt.compare(password, user.password)
+  if (!valido) return null
 
-module.exports = { createUser, loginUser };
+  return user
+}
+
+exports.generateToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role
+    },
+    process.env.ADMIN_SECRET_KEY,
+    { expiresIn: "1h" }
+  )
+}
