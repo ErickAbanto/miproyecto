@@ -1,28 +1,50 @@
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-const User = require("../models/User")
+const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-exports.createUser = async ({ nombreUsuario, dni, password }) => {
-  const hash = await bcrypt.hash(password, 10)
+/* =========================
+   CREAR USUARIO
+========================= */
+const createUser = async ({ nombreUsuario, dni, password, role }) => {
+  // Validar si el DNI ya existe
+  const existingUser = await User.findOne({ dni });
+  if (existingUser) {
+    throw new Error("El DNI ya está registrado");
+  }
 
-  return await User.create({
+  // Convertir role "cliente" a "C" si es enviado desde frontend
+  if (role === "cliente" || !role) role = "C";
+
+  // Hashear la contraseña
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = new User({
     nombreUsuario,
     dni,
-    password: hash
-  })
-}
+    password: hashedPassword,
+    role
+  });
 
-exports.loginUser = async (dni, password) => {
-  const user = await User.findOne({ dni })
-  if (!user) return null
+  return await user.save();
+};
 
-  const valido = await bcrypt.compare(password, user.password)
-  if (!valido) return null
+/* =========================
+   LOGIN USUARIO
+========================= */
+const loginUser = async (dni, password) => {
+  const user = await User.findOne({ dni });
+  if (!user) return null;
 
-  return user
-}
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return null;
 
-exports.generateToken = (user) => {
+  return user;
+};
+
+/* =========================
+   GENERAR TOKEN JWT
+========================= */
+const generateToken = (user) => {
   return jwt.sign(
     {
       id: user._id,
@@ -30,5 +52,11 @@ exports.generateToken = (user) => {
     },
     process.env.ADMIN_SECRET_KEY,
     { expiresIn: "1h" }
-  )
-}
+  );
+};
+
+module.exports = {
+  createUser,
+  loginUser,
+  generateToken
+};

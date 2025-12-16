@@ -1,22 +1,17 @@
-const express = require('express')
-const cors = require('cors')
-const cookieParser = require('cookie-parser')
-
-const routes = require('./routes')
+require("dotenv").config()
+const express = require("express")
+const cors = require("cors")
+const cookieParser = require("cookie-parser")
 
 const app = express()
 
-// Middlewares globales
-app.use(cors())
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}))
 app.use(express.json())
 app.use(cookieParser())
 
-// Rutas
-app.use('/api', routes)
-
-// Ruta de prueba
-app.get('/', (req, res) => {
-  res.send('Servidor backend funcionando correctamente')
-})
+app.use("/api", require("./routes"))
 
 module.exports = app

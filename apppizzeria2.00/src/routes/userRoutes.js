@@ -1,12 +1,20 @@
 const router = require("express").Router()
-const controller = require("../controllers/userController")
-const { verifyToken } = require("../middlewares/authMiddleware")
+const userController = require("../controllers/userController")
+const auth = require("../middlewares/auth")
 
-router.post("/register", controller.register)
-router.post("/login", controller.login)
+// REGISTRO
+router.post("/register", userController.register)
 
-router.get("/", verifyToken, controller.getAll)
-router.put("/:id", verifyToken, controller.update)
-router.delete("/:id", verifyToken, controller.remove)
+// LOGIN
+router.post("/login", userController.login)
+
+// LISTAR USUARIOS (PROTEGIDO)
+router.get("/", auth, userController.getAll)
+
+// ACTUALIZAR USUARIO
+router.put("/:id", auth, userController.update)
+
+// ELIMINAR USUARIO
+router.delete("/:id", auth, userController.remove)
 
 module.exports = router
