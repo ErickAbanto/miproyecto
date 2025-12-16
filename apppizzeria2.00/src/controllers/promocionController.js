@@ -1,8 +1,8 @@
 const Promocion = require("../models/Promocion")
 
-// ==============================
+
 // CREAR PROMOCIÓN
-// ==============================
+
 exports.create = async (req, res) => {
   try {
     const promocion = await Promocion.create(req.body)
@@ -19,9 +19,9 @@ exports.create = async (req, res) => {
   }
 }
 
-// ==============================
+
 // LISTAR PROMOCIONES ACTIVAS
-// ==============================
+
 exports.getAll = async (req, res) => {
   try {
     const promociones = await Promocion.find({ activo: true })
@@ -39,9 +39,9 @@ exports.getAll = async (req, res) => {
   }
 }
 
-// ==============================
+
 // ACTUALIZAR PROMOCIÓN
-// ==============================
+
 exports.update = async (req, res) => {
   try {
     const promocion = await Promocion.findByIdAndUpdate(
@@ -68,9 +68,9 @@ exports.update = async (req, res) => {
   }
 }
 
-// ==============================
+
 // ELIMINAR PROMOCIÓN
-// ==============================
+
 exports.remove = async (req, res) => {
   try {
     const promocion = await Promocion.findByIdAndDelete(req.params.id)

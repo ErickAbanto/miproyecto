@@ -2,9 +2,7 @@ const User = require("../models/User")
 const { createUser, loginUser, generateToken } = require("../services/userService")
 const { registerSchema, loginSchema } = require("../validators/userValidator")
 
-/* =========================
-   REGISTRO
-========================= */
+/*REGISTRO*/
 exports.register = async (req, res) => {
   try {
     const { error } = registerSchema.validate(req.body)
@@ -35,9 +33,7 @@ exports.register = async (req, res) => {
   }
 }
 
-/* =========================
-   LOGIN
-========================= */
+/*LOGIN*/
 exports.login = async (req, res) => {
   try {
     const { error } = loginSchema.validate(req.body)
@@ -76,9 +72,7 @@ exports.login = async (req, res) => {
   }
 }
 
-/* =========================
-   LISTAR USUARIOS
-========================= */
+/*LISTAR USUARIOS*/
 exports.getAll = async (req, res) => {
   try {
     const users = await User.find().select("-password")
@@ -93,9 +87,7 @@ exports.getAll = async (req, res) => {
   }
 }
 
-/* =========================
-   ACTUALIZAR USUARIO
-========================= */
+/*ACTUALIZAR USUARIO*/
 exports.update = async (req, res) => {
   try {
     const userUpdated = await User.findByIdAndUpdate(
@@ -117,9 +109,7 @@ exports.update = async (req, res) => {
   }
 }
 
-/* =========================
-   ELIMINAR USUARIO
-========================= */
+/* ELIMINAR USUARIO*/
 exports.remove = async (req, res) => {
   try {
     const userDeleted = await User.findByIdAndDelete(req.params.id)

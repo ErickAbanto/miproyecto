@@ -1,9 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
-/* ======================
-   LOGIN
-====================== */
+/*LOGIN*/
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -46,9 +44,7 @@ const login = async (req, res) => {
   }
 };
 
-/* ======================
-   ME (VALIDAR SESIÓN)
-====================== */
+/* VALIDAR SESIÓN*/
 const me = (req, res) => {
   try {
     const token = req.cookies.access_token;
@@ -72,9 +68,7 @@ const me = (req, res) => {
   }
 };
 
-/* ======================
-   LOGOUT
-====================== */
+/*LOGOUT*/
 const logout = (req, res) => {
   res.clearCookie("access_token", {
     httpOnly: true,
