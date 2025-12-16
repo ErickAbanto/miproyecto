@@ -1,8 +1,8 @@
 const Pizza = require("../models/Pizza")
 
-// ==============================
+
 // CREAR PIZZA
-// ==============================
+
 exports.create = async (req, res) => {
   try {
     const pizza = await Pizza.create(req.body)
@@ -19,9 +19,9 @@ exports.create = async (req, res) => {
   }
 }
 
-// ==============================
+
 // LISTAR PIZZAS
-// ==============================
+
 exports.getAll = async (req, res) => {
   try {
     const pizzas = await Pizza.find()
@@ -39,9 +39,9 @@ exports.getAll = async (req, res) => {
   }
 }
 
-// ==============================
+
 // ACTUALIZAR PIZZA
-// ==============================
+
 exports.update = async (req, res) => {
   try {
     const pizza = await Pizza.findByIdAndUpdate(
@@ -68,9 +68,9 @@ exports.update = async (req, res) => {
   }
 }
 
-// ==============================
+
 // ELIMINAR PIZZA
-// ==============================
+
 exports.remove = async (req, res) => {
   try {
     const pizza = await Pizza.findByIdAndDelete(req.params.id)
